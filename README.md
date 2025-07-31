@@ -254,7 +254,7 @@ if __name__ == "__main__":
 │   └── label-definitions.md  # 레이블 분류 기준 정의
 ├── scripts/             # 사후 분석 스크립트 모음
 ├── tests/               # 유닛 테스트
-├── .env.example         # 환경변수 템플릿 파일
+├── .env                 # 환경변수 템플릿 파일
 ├── requirements.txt     # Python 의존성 목록
 └── README.md     # 프로젝트 전반 문서
 ```
