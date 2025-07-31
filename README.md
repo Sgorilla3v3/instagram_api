@@ -1,69 +1,77 @@
 # Hashtag Posts Crawler WebApp (Python)
 
 **Instagram Graph API를 이용해 특정 해시태그를 사용한 사용자 게시물을 수집하고, 사후 분석 준비까지 지원하는 웹앱**
-앱 검증용 스크린샷·문서 포함
+앱 검증용 문서·스크린샷 예시 포함
 
 ---
 
 ## 📋 목차
+
 1. [프로젝트 개요](#프로젝트-개요)
 2. [전체 작업 과정](#전체-작업-과정)
 3. [환경 및 사전 준비](#환경-및-사전-준비)
 4. [설치 및 실행](#설치-및-실행)
 5. [인증 & 앱 검증 요건](#인증--앱-검증-요건)
 6. [코드 예시](#코드-예시)
-   - 해시태그 ID 조회
-   - 해시태그 기반 사용자 게시물 호출
-7. [워크플로우 다이어그램](#워크플로우-다이어그램)
-8. [로그 포맷 정의](#로그-포맷-정의)
-9. [레이블 정의](#레이블-정의)
-10. [디렉토리 구조](#디렉토리-구조)
-11. [기여 가이드](#기여-가이드)
-12. [라이선스](#라이선스)
+7. [로그 포맷 정의](#로그-포맷-정의)
+8. [레이블 정의](#레이블-정의)
+9. [디렉토리 구조](#디렉토리-구조)
+10. [기여 가이드](#기여-가이드)
+11. [라이선스](#라이선스)
 
 ---
 
 ## 1. 프로젝트 개요
-- **목적**
-  - Instagram Graph API로 특정 해시태그를 사용한 **사용자 게시물**(미디어) 정보를 수집
-  - 수집 데이터: 날짜, 사용자 정보, 게시물 내용(caption), 미디어 링크 등
-- **핵심 기능**
-  - OAuth2 인증 & Long‑Lived Token 발급
-  - 해시태그 ID 검색 → 페이징 크롤링 → DB 저장
-  - 로그 기록(앱 검증용)
-  - 추후 레이블 정의 문서화
+
+* **목적**
+
+  * Instagram Graph API로 특정 해시태그를 사용한 **사용자 게시물** 정보를 수집
+  * 수집 데이터: 날짜, 사용자 정보(username, ID), 게시물 내용(caption), 미디어 링크(permalink), 타입 등
+* **핵심 기능**
+
+  * OAuth2 인증 & Long-Lived Token 발급
+  * 해시태그 ID 검색 → 페이징 크롤링 → DB/파일 저장
+  * 앱 검증용 로그 기록
+  * 추후 레이블 정의 문서화
 
 ---
 
 ## 2. 전체 작업 과정
+
 1. 앱 등록 & OAuth 승인 요청
-2. Long‑Lived Token 발급 & 저장
+2. Long-Lived Token 발급 & 저장
 3. 해시태그 ID 조회
 4. 해시태그 기반 사용자 게시물 호출
-5. 수집 데이터(날짜·사용자·내용·링크) DB/파일 저장
-6. 레이블 정의(`docs/label-definitions.md`)
+5. 수집 데이터(날짜·사용자·내용·링크·타입) DB/파일 저장
+6. 레이블 정의 문서화 (`docs/label-definitions.md`)
 7. 사후 분석(텍스트 마이닝, 네트워크 분석 등) 준비
 8. 앱 검증 제출용 스크린샷·문서 준비
 
 ---
 
 ## 3. 환경 및 사전 준비
-- **Python ≥ 3.9**
-- **Instagram Developer Account**
-  - 승인된 권한: `instagram_basic`, `pages_show_list`, `instagram_manage_insights`
-- **환경변수** (`.env`)
+
+* **Python ≥ 3.9**
+* **Instagram Developer Account**
+
+  * 필요 권한: `instagram_basic`, `pages_show_list`, `instagram_manage_insights`, `business_management`, `page_read_engagement`, `pages_read_user_content`
+* **환경변수** (`.env` 또는 CI 환경 설정)
+
   ```bash
   IG_CLIENT_ID=your_app_id
   IG_CLIENT_SECRET=your_app_secret
   IG_REDIRECT_URI=https://your-domain.com/auth/callback
   IG_BUSINESS_ID=your_ig_business_account_id
   IG_LONG_LIVED_TOKEN=your_long_lived_token
+  ```
+
+---
 
 ## 4. 설치 및 실행
 
 ```bash
-git clone https://github.com/ORG/hashtag-posts-crawler.git
-cd hashtag-posts-crawler
+git clone https://github.com/Sgorilla3v3/instagram_api.git
+cd instagram_api
 
 python -m venv venv
 source venv/bin/activate
@@ -73,20 +81,21 @@ cp .env.example .env
 # .env에 환경변수 설정
 
 uvicorn app.main:app --reload
-
 ```
 
 ---
 
 ## 5. 인증 & 앱 검증 요건
 
-- **OAuth2 흐름**
-    1. `/auth/login` → Instagram 동의 화면
-    2. `/auth/callback` → `code` 수신 → 토큰 교환
-- **앱 검증용 문서**
-    - 이 README.md
-    - `docs/app-review.md` (정책 준수 체크리스트)
-    - 주요 Postman 요청·응답 스크린샷
+* **OAuth2 흐름**
+
+  1. `/auth/login` → Instagram 동의 화면
+  2. `/auth/callback` → `code` 수신 → 토큰 교환
+* **앱 검증용 문서**
+
+  * 이 README.md
+  * `docs/app-review.md` (정책 준수 체크리스트)
+  * 주요 Postman 요청·응답 스크린샷
 
 ---
 
@@ -95,13 +104,14 @@ uvicorn app.main:app --reload
 ### 6.1 해시태그 ID 조회
 
 ```python
-import os, requests
+import os
+import requests
 
 INSTAGRAM_ACCOUNT_ID = os.getenv("IG_BUSINESS_ID")
 ACCESS_TOKEN         = os.getenv("IG_LONG_LIVED_TOKEN")
 
 def get_hashtag_id(hashtag: str) -> str:
-    url = "https://graph.facebook.com/v17.0/ig_hashtag_search"
+    url = "https://graph.facebook.com/v23.0/ig_hashtag_search"
     params = {
         "user_id": INSTAGRAM_ACCOUNT_ID,
         "q": hashtag,
@@ -113,12 +123,27 @@ def get_hashtag_id(hashtag: str) -> str:
     if not data:
         raise ValueError(f"No hashtag ID found for '{hashtag}'")
     return data[0]["id"]
-
 ```
 
 ### 6.2 해시태그 기반 사용자 게시물 호출
 
 ```python
+import argparse
+import logging
+import json
+import time
+import requests
+
+# 로거 설정
+logger = logging.getLogger("crawler")
+logger.setLevel(logging.INFO)
+fh = logging.FileHandler("crawler.log")
+formatter = logging.Formatter('%(message)s')
+fh.setFormatter(formatter)
+logger.addHandler(fh)
+
+# fetch_hashtag_posts 함수는 ACCESS_TOKEN을 환경변수로부터 읽어 옵니다
+
 def fetch_hashtag_posts(hashtag_id: str, limit: int = 50) -> list[dict]:
     url = f"https://graph.facebook.com/v17.0/{hashtag_id}/recent_media"
     params = {
@@ -126,36 +151,45 @@ def fetch_hashtag_posts(hashtag_id: str, limit: int = 50) -> list[dict]:
         "access_token": ACCESS_TOKEN,
         "limit": limit,
     }
+    start = time.time()
     resp = requests.get(url, params=params)
+    elapsed_ms = int((time.time() - start) * 1000)
+    data = resp.json().get("data", [])
+    # 로그 기록
+    log_entry = {
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "endpoint": resp.request.path_url,
+        "status_code": resp.status_code,
+        "response_time_ms": elapsed_ms,
+        "items_count": len(data),
+        "error": None if resp.status_code == 200 else resp.text
+    }
+    logger.info(json.dumps(log_entry, ensure_ascii=False))
     resp.raise_for_status()
-    return resp.json().get("data", [])
+    return data
 
 if __name__ == "__main__":
-    tag_id = get_hashtag_id("korea")
-    posts = fetch_hashtag_posts(tag_id, 25)
+    parser = argparse.ArgumentParser(description="Fetch Instagram posts by hashtag")
+    parser.add_argument("hashtag", help="검색할 해시태그 (# 제외)")
+    parser.add_argument("--limit", type=int, default=25, help="가져올 게시물 수")
+    args = parser.parse_args()
+
+    # 사용자 입력으로 해시태그 ID 조회
+    tag_id = get_hashtag_id(args.hashtag)
+    posts = fetch_hashtag_posts(tag_id, args.limit)
+
     for p in posts:
-        print(p["timestamp"], p["username"], p["permalink"], p.get("caption","")[:40])
-
+        print(
+            p["timestamp"],
+            p["username"],
+            p["permalink"],
+            (p.get("caption","")[:40] + '...') if p.get("caption") else ''
+        )
 ```
 
 ---
 
-## 7. 워크플로우 다이어그램
-
-```mermaid
-flowchart LR
-  A[1. OAuth 인증] --> B[2. Token 저장]
-  B --> C[3. Hashtag ID 조회]
-  C --> D[4. Posts 크롤링]
-  D --> E[5. DB/파일 저장]
-  E --> F[6. 레이블 정의 문서화]
-  E --> G[7. 사후 분석 준비]
-
-```
-
----
-
-## 8. 로그 포맷 정의
+## 7. 로그 포맷 정의
 
 앱 검증용 로그 예시(JSON)
 
@@ -168,31 +202,45 @@ flowchart LR
   "items_count": 25,
   "error": null
 }
-
 ```
 
-| 필드 | 설명 |
-| --- | --- |
-| `timestamp` | ISO8601 형식 요청 시각 |
-| `endpoint` | 호출 엔드포인트 |
-| `status_code` | HTTP 응답 코드 |
-| `response_time_ms` | 응답 소요 시간 (밀리초) |
-| `items_count` | 반환된 아이템 개수 |
-| `error` | 오류 메시지 (실패 시) |
+| 필드                 | 설명               |
+| ------------------ | ---------------- |
+| `timestamp`        | ISO8601 형식 요청 시각 |
+| `endpoint`         | 호출 엔드포인트         |
+| `status_code`      | HTTP 응답 코드       |
+| `response_time_ms` | 응답 소요 시간 (밀리초)   |
+| `items_count`      | 반환된 아이템 개수       |
+| `error`            | 오류 메시지 (실패 시)    |
 
 ---
 
-## 9. 레이블 정의
+## 8. 레이블 정의
 
-- 레이블(분류 기준)은 별도 문서(`docs/label-definitions.md`)에서 상세화
-- 예시
-    - `media_type`별 분류 (IMAGE, VIDEO)
-    - `시간대`별 태깅 (morning, afternoon…)
-    - 해시태그 텍스트 마이닝용 키워드 레이블 등
+`docs/label-definitions.md` 문서에 상세 정의 예정이며, 인스타그램 Graph API 문서를 참고하여 초기 예시 레이블을 아래와 같이 제안합니다.
+
+| 레이블                    | 타입       | 설명                                     | API 필드                        |
+| ---------------------- | -------- | -------------------------------------- | ----------------------------- |
+| `id`                   | string   | 게시물 고유 식별자                             | `id`                          |
+| `username`             | string   | 게시물 작성자 계정명                            | `username`                    |
+| `user_id`              | string   | 게시물 작성자 계정의 비즈니스 계정 ID                 | `ig_id` (비즈니스 API)            |
+| `caption`              | string   | 게시물 캡션 텍스트                             | `caption`                     |
+| `media_type`           | enum     | 미디어 타입 (IMAGE, VIDEO, CAROUSEL\_ALBUM) | `media_type`                  |
+| `media_url`            | URL      | 이미지 혹은 비디오 파일의 URL                     | `media_url`                   |
+| `permalink`            | URL      | 게시물 고유 링크                              | `permalink`                   |
+| `thumbnail_url`        | URL      | 비디오 미디어의 경우 썸네일 이미지 URL                | `thumbnail_url`               |
+| `timestamp`            | datetime | 게시물 업로드 시간 (ISO 8601 형식)               | `timestamp`                   |
+| `like_count`           | integer  | 게시물 좋아요 수 (비즈니스 계정에서만 조회 가능)           | `like_count`                  |
+| `comments_count`       | integer  | 게시물 댓글 수 (비즈니스 계정에서만 조회 가능)            | `comments_count`              |
+| `children`             | list     | 캐로셀(여러 미디어) 게시물의 자식 미디어 목록             | `children.data`               |
+| `location`             | object   | 게시물 위치 정보 (장소 ID, 이름, 위도/경도 등)         | `location`                    |
+| `insights.impressions` | integer  | 게시물 도달 수 (비즈니스 계정 전용, 인사이트 엔드포인트 사용)   | `insights.metric=impressions` |
+| `insights.reach`       | integer  | 게시물 조회 수 (비즈니스 계정 전용)                  | `insights.metric=reach`       |
+| `insights.engagement`  | integer  | 게시물 참여 수 (비즈니스 계정 전용)                  | `insights.metric=engagement`  |
 
 ---
 
-## 10. 디렉토리 구조
+## 9. 디렉토리 구조
 
 ```
 .
@@ -204,31 +252,72 @@ flowchart LR
 ├── docs/
 │   ├── app-review.md    # 앱 검증용 체크리스트
 │   └── label-definitions.md
-├── scripts/             # (사후 분석 스크립트 모음)
+├── scripts/             # 사후 분석 스크립트 모음
 ├── tests/               # 유닛 테스트
 ├── .env.example
 ├── requirements.txt
 └── README.md
-
 ```
 
 ---
 
-## 11. 기여 가이드
+## 10. 기여 가이드
 
-1. 저장소 Fork
-2. `feature/your-feature` 브랜치 생성
-3. `flake8` → `pytest` 통과
-4. PR 생성 → 리뷰 → Merge
+아래는 `CONTRIBUTING.md` 작성 예시로, 저장소 루트에 파일을 추가하시고 링크해주세요.
+
+### 1) 시작하기
+
+```bash
+# 저장소 포크 & 클론
+git clone https://github.com/내_계정/instagram_api.git
+cd instagram_api
+
+# upstream 설정
+git remote add upstream https://github.com/Sgorilla3v3/instagram_api.git
+git fetch upstream && git checkout main && git merge upstream/main
+```
+
+### 2) 브랜치 전략
+
+* `main`: 배포용 안정 브랜치
+* `develop`: 개발 통합 브랜치 (선택)
+* 기능 브랜치: `feature/{이슈번호}-{설명}`
+* 버그 브랜치: `bugfix/{이슈번호}-{설명}`
+
+### 3) 코드 스타일
+
+* Python: Black, flake8 사용
+* Commit 메시지: `[feat|fix|docs|test|refactor] #이슈번호 요약`
+
+### 4) Pull Request
+
+1. Fork → 브랜치 생성 → 작업
+2. Commit & Push
+3. GitHub에서 PR 생성 (Base: main, Compare: feature/\*)
+4. 리뷰 반영 → Merge
+
+### 5) 이슈 작성
+
+* 템플릿: Bug Report / Feature Request
+* 최소 정보: 재현 방법, 환경, 기대 결과 vs 실제 결과
+
+### 6) 테스트
+
+```bash
+pytest --cov=app tests/
+```
+
+### 7) 코드 오너
+
+`.github/CODEOWNERS`에 담당자 지정 가능
 
 ---
 
-## 12. 라이선스
+## 11. 라이선스
 
-MIT © 2025 Your Name
+MIT © 2025 Jonathan Seong
 
-```
 
-이 README.md를 기반으로, `docs/label-definitions.md`에서 레이블 체계를 정의하고, 앱 검증용 스크린샷을 `docs/app-review.md`에 추가하시면 완성도가 높아집니다. 추가 수정이 필요하시면 알려주세요!
 
-```
+
+
