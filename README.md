@@ -251,14 +251,44 @@ if __name__ == "__main__":
 │   └── models.py        # Pydantic & DB 모델
 ├── docs/
 │   ├── app-review.md    # 앱 검증용 체크리스트
-│   └── label-definitions.md
+│   └── label-definitions.md  # 레이블 분류 기준 정의
 ├── scripts/             # 사후 분석 스크립트 모음
 ├── tests/               # 유닛 테스트
-├── .env.example
-├── requirements.txt
-└── README.md
+├── .env.example         # 환경변수 템플릿 파일
+├── requirements.txt     # Python 의존성 목록
+└── README.md     # 프로젝트 전반 문서
 ```
+* **각 디렉토리 및 파일 설명**:
 
+ *app/: 애플리케이션 코어 로직이 위치하는 폴더입니다.
+
+ *main.py: FastAPI 애플리케이션 인스턴스 생성 및 라우터 등록
+
+ *auth.py: OAuth2 인증 처리(로그인·콜백) 관련 기능
+
+ *crawler.py: 해시태그 ID 조회 및 사용자 게시물 크롤링 함수 구현
+
+ *models.py: Pydantic 모델 및 데이터베이스 스키마 정의
+
+* **docs/**: 프로젝트 문서화를 위한 디렉토리입니다.
+
+ *app-review.md: Instagram 앱 검증 시 제출할 체크리스트 및 스크린샷 가이드
+
+ *label-definitions.md: 수집 데이터에 적용할 레이블(분류 기준) 상세 정의
+
+* **scripts/**: 사후 분석을 위한 스크립트가 위치합니다.
+
+ *예: 언급량 집계(aggregate.py), 텍스트 네트워크 생성(text_network.py)
+
+* **tests/**: 테스트 코드 디렉토리입니다.
+
+ *유닛 테스트, API 통합 테스트 및 Mock 활용 예제 포함
+
+* **.env.example**: 환경변수 설정 예시 파일로, 실제 .env 파일을 생성할 때 참고합니다.
+
+* **requirements.txt**: 프로젝트에서 사용하는 Python 패키지 목록과 버전 정보를 관리합니다.
+
+* **README.md**: 프로젝트 개요, 사용법, 코드 예시, 기여 가이드 등 주요 문서를 포함한 최상위 문서입니다.
 ---
 
 ## 10. 기여 가이드
