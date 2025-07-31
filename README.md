@@ -145,7 +145,7 @@ logger.addHandler(fh)
 # fetch_hashtag_posts 함수는 ACCESS_TOKEN을 환경변수로부터 읽어 옵니다
 
 def fetch_hashtag_posts(hashtag_id: str, limit: int = 50) -> list[dict]:
-    url = f"https://graph.facebook.com/v17.0/{hashtag_id}/recent_media"
+    url = f"https://graph.facebook.com/v13.0/{hashtag_id}/recent_media"
     params = {
         "fields": "id,caption,permalink,media_type,timestamp,username",
         "access_token": ACCESS_TOKEN,
