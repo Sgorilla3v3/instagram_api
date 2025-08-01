@@ -62,7 +62,7 @@ async def get_access_token() -> str:
 @router.get("/login")
 def login():
     auth_url = (
-        f"https://www.facebook.com/v17.0/dialog/oauth"
+        f"https://www.facebook.com/v23.0/dialog/oauth"
         f"?client_id={CLIENT_ID}"
         f"&redirect_uri={REDIRECT_URI}"
         f"&scope=instagram_basic,pages_show_list,instagram_manage_insights"
