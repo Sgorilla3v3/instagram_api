@@ -82,6 +82,65 @@ cp .env.example .env
 
 uvicorn app.main:app --reload
 ```
+실제 서버를 띄우려면 아래 순서대로 진행하시면 됩니다.
+
+1. **프로젝트 클론 및 디렉터리 진입**
+
+   ```bash
+   git clone <repo-url>
+   cd <repo-root>
+   ```
+
+2. **가상환경 생성 및 활성화**
+
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate      # macOS/Linux
+   .venv\Scripts\activate         # Windows
+   ```
+
+3. **의존성 설치**
+
+   ```bash
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
+
+4. **환경 변수 설정**
+   프로젝트 루트에 `.env` 파일을 만들고 `.env.example`의 템플릿을 복사한 뒤, 다음 값을 채워 넣습니다.
+
+   ```dotenv
+   IG_CLIENT_ID=…
+   IG_CLIENT_SECRET=…
+   IG_REDIRECT_URI=…
+   IG_BUSINESS_ID=…
+   # (선택) 수동 단기 토큰
+   IG_SHORT_TOKEN=…
+   ```
+
+5. **Uvicorn으로 서버 실행**
+   FastAPI 앱(`app/main.py` 안의 `app` 객체)을 `uvicorn`으로 구동합니다.
+
+   ```bash
+   uvicorn app.main:app \
+     --host 0.0.0.0 \
+     --port 8000 \
+     --reload
+   ```
+
+   * `--reload` 옵션을 주면 코드 변경 시 자동 재시작됩니다.
+
+6. **엔드포인트 확인**
+
+   * OAuth 로그인:
+     `http://localhost:8000/auth/login`
+   * 콜백(토큰 발급):
+     `http://localhost:8000/auth/callback?code=<발급된 code>`
+   * 해시태그 크롤링:
+     `http://localhost:8000/crawl/<hashtag>?limit=10`
+
+
+이제 `localhost:8000/docs` 에 접속하시면 Swagger UI로 자동 생성된 API 문서를 통해도 각 엔드포인트를 테스트해 보실 수 있습니다.
 
 ---
 
