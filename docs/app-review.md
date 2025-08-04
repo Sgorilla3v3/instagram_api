@@ -12,7 +12,7 @@
 
 ## 2. OAuth Redirect URI
 
-* **등록된 URI**: `https://your-domain.com/auth/callback` (ngrok 또는 실제 도메인)
+* **등록된 URI**: `https://cmz054.kr/auth/callback` (ngrok 또는 실제 도메인)
 * Facebook 개발자 대시보드의 **Valid OAuth Redirect URIs**에 정확히 등록
 
 ## 3. 데이터 사용 정책(Data Usage)
@@ -21,7 +21,13 @@
 
   * `instagram_basic`
   * `pages_show_list`
+  * `business_management`
   * `instagram_manage_insights` (해시태그 인사이트 조회시)
+  * `pages_read_engagement`
+  * `pages_read_user_content`
+  * `Instagram_public_content_access` (고급엑세스 요청중)
+<img width="988" height="775" alt="image" src="https://github.com/user-attachments/assets/5dd3265c-4ebc-41d7-8022-c6ab84ef6c38" />
+
 * **데이터 저장 및 보관**:
 
   * 수집한 게시물 데이터(캡션, 메타정보)를 DB에 암호화 저장
@@ -32,7 +38,7 @@
 
 ## 4. 개인정보 처리 방침(Privacy Policy)
 
-* **URL**: `https://your-domain.com/privacy-policy`
+* **URL**: `https://cmz054.kr/?mode=privacy`
 * 주요 항목:
 
   * 수집하는 정보: 게시물 메타정보(텍스트, 링크, 타임스탬프 등)
@@ -42,7 +48,7 @@
 
 ## 5. 서비스 약관(Terms of Service)
 
-* **URL**: `https://your-domain.com/terms`
+* **URL**: `https://cmz054.kr/?mode=policy`
 * 사용 약관에 App Review 승인 후에도 사용 가능한 범위 명시
 
 ## 6. 스크린샷 및 동작 영상
@@ -58,7 +64,7 @@
    * `/ig_hashtag_search` 요청 파라미터 및 응답 스크린샷
 4. **게시물 호출 및 로그 기록**
 
-   * `/hashtag_id/recent_media` 호출 응답 일부 + `crawler.log` JSON 기록 예시
+   * `/hashtag_id/recent_media` 호출 응답 일부 + `hashtag_contents.log` JSON 기록 예시
 
 ## 7. 버전 및 배포(Versioning & Deployment)
 
