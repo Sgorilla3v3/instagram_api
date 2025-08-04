@@ -27,9 +27,10 @@
 
   * Instagram Graph API로 특정 해시태그를 사용한 **사용자 게시물** 정보를 수집
   * 수집 데이터: 날짜, 사용자 정보(username, ID), 게시물 내용(caption), 미디어 링크(permalink), 타입 등
+    
 * **핵심 기능**
 
-  * OAuth2 인증 & Long-Lived Token 발급
+  * OAuth2 인증 & Long-Lived Token 발급(사전작업)
   * 해시태그 ID 검색 → 페이징 크롤링 → DB/파일 저장
   * 앱 검증용 로그 기록
   * 추후 레이블 정의 문서화
@@ -38,8 +39,8 @@
 
 ## 2. 전체 작업 과정
 
-1. 앱 등록 & OAuth 승인 요청
-2. Long-Lived Token 발급 & 저장
+1. 앱 등록 & OAuth 승인 요청(사전작업)
+2. Long-Lived Token 발급 & 저장(사전작업)
 3. 해시태그 ID 조회
 4. 해시태그 기반 사용자 게시물 호출
 5. 수집 데이터(날짜·사용자·내용·링크·타입) DB/파일 저장
@@ -58,11 +59,14 @@
 * **환경변수** (`.env` 또는 CI 환경 설정)
 
   ```bash
-  IG_CLIENT_ID=your_app_id
-  IG_CLIENT_SECRET=your_app_secret
-  IG_REDIRECT_URI=https://your-domain.com/auth/callback
-  IG_BUSINESS_ID=your_ig_business_account_id
-  IG_LONG_LIVED_TOKEN=your_long_lived_token
+  PAGE_ID =your_page_id
+  ACCESS_TOKEN =Long_lived_token
+  HASHTAG=hashtag_str
+  API_VERSION =v23.0
+  IG_USER_ID =your_business_ID 
+  HASHTAG_ID =hashtag_ID
+  FIELD_PARAM=id,caption,timestamp,permalink,media_url,owner{id,username},like_count,comments_count
+  OUTPUT_DIR =C:\\Users\\Administrator\\Desktop\\git_pre\\instagram_api\\scripts
   ```
 
 ---
@@ -117,31 +121,6 @@ uvicorn app.main:app --reload
    IG_SHORT_TOKEN=…
    ```
 
-5. **Uvicorn으로 서버 실행**
-   FastAPI 앱(`app/main.py` 안의 `app` 객체)을 `uvicorn`으로 구동합니다.
-
-   ```bash
-   uvicorn app.main:app \
-     --host 0.0.0.0 \
-     --port 8000 \
-     --reload
-   ```
-
-   * `--reload` 옵션을 주면 코드 변경 시 자동 재시작됩니다.
-
-6. **엔드포인트 확인**
-
-   * OAuth 로그인:
-     `http://localhost:8000/auth/login`
-   * 콜백(토큰 발급):
-     `http://localhost:8000/auth/callback?code=<발급된 code>`
-   * 해시태그 크롤링:
-     `http://localhost:8000/crawl/<hashtag>?limit=10`
-
-
-이제 `localhost:8000/docs` 에 접속하시면 Swagger UI로 자동 생성된 API 문서를 통해도 각 엔드포인트를 테스트해 보실 수 있습니다.
-
----
 
 ## 5. 인증 & 앱 검증 요건
 
@@ -186,11 +165,22 @@ def get_hashtag_id(hashtag: str) -> str:
 ### 6.2 해시태그 기반 사용자 게시물 호출
 
 ```python
+import os
 import argparse
 import logging
 import json
 import time
 import requests
+from dotenv import load_dotenv
+
+# .env 파일의 변수들을 로드
+load_dotenv()
+
+# 환경변수에서 꺼내오기
+ACCESS_TOKEN  = os.getenv("ACCESS_TOKEN")
+IG_USER_ID    = os.getenv("IG_USER_ID")
+FIELD_PARAMS  = os.getenv("FIELD_PARAMS", "id,caption,permalink,media_type,timestamp,username")
+HASHTAG_ID    = os.getenv("HASHTAG_ID")
 
 # 로거 설정
 logger = logging.getLogger("crawler")
@@ -200,20 +190,25 @@ formatter = logging.Formatter('%(message)s')
 fh.setFormatter(formatter)
 logger.addHandler(fh)
 
-# fetch_hashtag_posts 함수는 ACCESS_TOKEN을 환경변수로부터 읽어 옵니다
+def get_hashtag_id(tag: str) -> str:
+    if not IG_USER_ID or not ACCESS_TOKEN:
+        raise RuntimeError("환경변수 IG_USER_ID 또는 ACCESS_TOKEN이 설정되어 있지 않습니다.")
+    url = "https://graph.facebook.com/v23.0/ig_hashtag_search"
+    params = {"user_id": IG_USER_ID, "q": tag, "access_token": ACCESS_TOKEN}
+    resp = requests.get(url, params=params)
+    resp.raise_for_status()
+    data = resp.json().get("data", [])
+    if not data:
+        raise ValueError(f"해시태그 '{tag}' 에 대한 ID를 찾을 수 없습니다.")
+    return data[0]["id"]
 
 def fetch_hashtag_posts(hashtag_id: str, limit: int = 50) -> list[dict]:
     url = f"https://graph.facebook.com/v23.0/{hashtag_id}/recent_media"
-    params = {
-        "fields": "id,caption,permalink,media_type,timestamp,username",
-        "access_token": ACCESS_TOKEN,
-        "limit": limit,
-    }
+    params = {"user_id": IG_USER_ID,"fields": FIELD_PARAMS, "access_token": ACCESS_TOKEN, "limit": limit}
     start = time.time()
     resp = requests.get(url, params=params)
     elapsed_ms = int((time.time() - start) * 1000)
     data = resp.json().get("data", [])
-    # 로그 기록
     log_entry = {
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "endpoint": resp.request.path_url,
@@ -228,20 +223,44 @@ def fetch_hashtag_posts(hashtag_id: str, limit: int = 50) -> list[dict]:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fetch Instagram posts by hashtag")
-    parser.add_argument("hashtag", help="검색할 해시태그 (# 제외)")
-    parser.add_argument("--limit", type=int, default=25, help="가져올 게시물 수")
+    parser.add_argument(
+        "--hashtag", "-t",
+        help="검색할 해시태그 (# 제외). env HASHTAG_ID가 있으면 생략 가능",
+        required=False
+    )
+    parser.add_argument("--limit", "-n", type=int, default=25, help="가져올 게시물 수")
     args = parser.parse_args()
 
-    # 사용자 입력으로 해시태그 ID 조회
-    tag_id = get_hashtag_id(args.hashtag)
+    # 1) env 에 HASHTAG_ID 가 있으면 우선 사용
+    if HASHTAG_ID:
+        tag_id = HASHTAG_ID
+    # 2) 없으면 --hashtag 옵션으로 받은 이름을 ID 조회
+    elif args.hashtag:
+        tag_id = get_hashtag_id(args.hashtag)
+    else:
+        parser.error("HASHTAG_ID 환경변수 또는 --hashtag/-t 옵션 중 하나를 지정하세요.")
+
     posts = fetch_hashtag_posts(tag_id, args.limit)
+## 여기에 고급 액세스 권한이 필요함
+    for p in posts:
+        print(
+            p["timestamp"],
+            p["username"],
+            p["permalink"],
+            (p.get("caption", "")[:40] + '...') if p.get("caption") else ''
+        )
+
+
+    # 디버그: 실제 posts 값이 무엇인지 출력
+    print("DEBUG: posts =", posts)
+    print("DEBUG: len(posts) =", len(posts))
 
     for p in posts:
         print(
             p["timestamp"],
             p["username"],
             p["permalink"],
-            (p.get("caption","")[:40] + '...') if p.get("caption") else ''
+            (p.get("caption", "")[:40] + '...') if p.get("caption") else ''
         )
 ```
 
@@ -275,7 +294,6 @@ if __name__ == "__main__":
 
 ## 8. 레이블 정의
 
-`docs/label-definitions.md` 문서에 상세 정의 예정이며, 인스타그램 Graph API 문서를 참고하여 초기 예시 레이블을 아래와 같이 제안합니다.
 
 | 레이블                    | 타입       | 설명                                     | API 필드                        |
 | ---------------------- | -------- | -------------------------------------- | ----------------------------- |
@@ -303,46 +321,23 @@ if __name__ == "__main__":
 ```
 .
 ├── app/
-│   ├── main.py          # FastAPI 서버 진입점
-│   ├── auth.py          # OAuth2 로직
-│   ├── crawler.py       # get_hashtag_id, fetch_hashtag_posts
-│   └── models.py        # Pydantic & DB 모델
+│   ├── hash_ID_posts.py          # hashtag_ID로 게시물 검색(ex. 청도혁신센터)
+│   ├── hash_ID_srch.py          # 원하는 hashtag_ID 검색
+│   ├── my_contents.py       # 내 게시물 불러와서 json 저장(고급액세스는 필요없으나 데이터 확보에 필요한 작업)
+│   └── models.py  # 추후 데이터 양이 많아지거나 자동화, 웹앱화시 데이터 용량 확대를 위한 스키마 정의파트
 ├── docs/
-│   ├── app-review.md    # 앱 검증용 체크리스트
-│   └── label-definitions.md  # 레이블 분류 기준 정의
+│   └──  app-review.md    # 앱 검증용 체크리스트
 ├── scripts/             # 사후 분석 스크립트 모음
 ├── tests/               # 유닛 테스트
 ├── .env                 # 환경변수 템플릿 파일
 ├── requirements.txt     # Python 의존성 목록
+├── .gitignore     # .env등 환경변수를 자동으로 공유하지 않도록 설정
 └── README.md     # 프로젝트 전반 문서
 ```
-* **각 디렉토리 및 파일 설명**:
-  * app/: 애플리케이션 코어 로직이 위치하는 폴더입니다.
-  * main.py: FastAPI 애플리케이션 인스턴스 생성 및 라우터 등록
-  * auth.py: OAuth2 인증 처리(로그인·콜백) 관련 기능
-  * crawler.py: 해시태그 ID 조회 및 사용자 게시물 크롤링 함수 구현
-  * models.py: Pydantic 모델 및 데이터베이스 스키마 정의
 
-* **docs/**: 프로젝트 문서화를 위한 디렉토리입니다.
-  * app-review.md: Instagram 앱 검증 시 제출할 체크리스트 및 스크린샷 가이드
-  * label-definitions.md: 수집 데이터에 적용할 레이블(분류 기준) 상세 정의
-
-* **scripts/**: 사후 분석을 위한 스크립트가 위치합니다.
-  * 예: 언급량 집계(aggregate.py), 텍스트 네트워크 생성(text_network.py)
-
-* **tests/**: 테스트 코드 디렉토리입니다.
-  * 유닛 테스트, API 통합 테스트 및 Mock 활용 예제 포함
-
-* **.env.example**: 환경변수 설정 예시 파일로, 실제 .env 파일을 생성할 때 참고합니다.
-
-* **requirements.txt**: 프로젝트에서 사용하는 Python 패키지 목록과 버전 정보를 관리합니다.
-
-* **README.md**: 프로젝트 개요, 사용법, 코드 예시, 기여 가이드 등 주요 문서를 포함한 최상위 문서입니다.
----
 
 ## 10. 기여 가이드
 
-아래는 `CONTRIBUTING.md` 작성 예시로, 저장소 루트에 파일을 추가하시고 링크해주세요.
 
 ### 1) 시작하기
 
