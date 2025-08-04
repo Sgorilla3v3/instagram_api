@@ -64,9 +64,13 @@
 3. **해시태그 ID 조회**
 
    * `/ig_hashtag_search` 요청 파라미터 및 응답 스크린샷
+<img width="587" height="886" alt="image" src="https://github.com/user-attachments/assets/bd0b13e1-904f-43a9-8491-43338d8ca395" />
+
 4. **게시물 호출 및 로그 기록**
 
    * `/hashtag_id/recent_media` 호출 응답 일부 + `hashtag_contents.log` JSON 기록 예시
+<img width="908" height="307" alt="image" src="https://github.com/user-attachments/assets/cf3353a4-34eb-4fd9-bc85-44333f12caaf" />
+
 
 ## 7. 버전 및 배포(Versioning & Deployment)
 
@@ -75,7 +79,7 @@
 
 ## 8. 추가 검증 자료(Additional)
 
-* **Postman Collection**: `.postman_collection.json` 첨부
+
 * **README.md**: 프로젝트 개요 및 사용법
 * **CONTRIBUTING.md**: 기여 가이드
 * **LICENSE**: MIT 라이선스
