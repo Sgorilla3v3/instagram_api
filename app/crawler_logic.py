@@ -16,3 +16,4 @@ async def fetch_hashtag_posts(tag_id: str, limit: int, token: str) -> list:
         resp = await client.get(f"https://graph.facebook.com/{tag_id}/recent_media", params=params)
         resp.raise_for_status()
         return resp.json().get("data", [])
+    
