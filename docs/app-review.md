@@ -59,6 +59,8 @@
 2. **Long-Lived Token 발급**
 
    * Postman 또는 curl 요청/응답 화면
+<img width="988" height="757" alt="image" src="https://github.com/user-attachments/assets/e63ad700-211e-45c4-ae2f-41985a7d8dcd" />
+
 3. **해시태그 ID 조회**
 
    * `/ig_hashtag_search` 요청 파라미터 및 응답 스크린샷
