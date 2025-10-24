@@ -1,8 +1,12 @@
 import os
 import requests
+from dotenv import load_dotenv
 
-INSTAGRAM_ACCOUNT_ID = os.getenv("IG_BUSINESS_ID")
-ACCESS_TOKEN         = os.getenv("IG_LONG_LIVED_TOKEN")
+load_dotenv()
+
+INSTAGRAM_ACCOUNT_ID = os.getenv("IG_USER_ID")
+ACCESS_TOKEN         = os.getenv("ACCESS_TOKEN")
+HASHTAG              = os.getenv("HASHTAG")  # env에서 가져오기
 
 def get_hashtag_id(hashtag: str) -> str:
     url = "https://graph.facebook.com/v23.0/ig_hashtag_search"
@@ -17,3 +21,12 @@ def get_hashtag_id(hashtag: str) -> str:
     if not data:
         raise ValueError(f"No hashtag ID found for '{hashtag}'")
     return data[0]["id"]
+
+if __name__ == "__main__":
+    if not HASHTAG:
+        raise RuntimeError("환경변수 HASHTAG가 설정되어 있지 않습니다.")
+    try:
+        tag_id = get_hashtag_id(HASHTAG)
+        print(f"해시태그 '{HASHTAG}' 의 ID는: {tag_id}")
+    except Exception as e:
+        print("에러:", e)
