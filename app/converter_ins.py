@@ -29,7 +29,7 @@ def json_to_csv():
 # 2. 사용된 단어만 뽑기
 def extract_words():
     # JSON 파일 읽기
-    with open('/mnt/user-data/uploads/all_user_media.json', 'r', encoding='utf-8') as f:
+    with open('scripts/all_user_media.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     
     # 모든 텍스트 합치기
@@ -46,7 +46,7 @@ def extract_words():
     word_count = Counter(korean_words)
     
     # 결과를 간단한 CSV로 저장
-    with open('/mnt/user-data/outputs/words.csv', 'w', newline='', encoding='utf-8-sig') as f:
+    with open('scripts/words.csv', 'w', newline='', encoding='utf-8-sig') as f:
         writer = csv.writer(f)
         writer.writerow(['단어', '횟수'])  # 헤더
         
